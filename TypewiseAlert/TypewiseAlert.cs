@@ -34,7 +34,7 @@ namespace TypewiseAlert
 
             BreachType breachType = classifyTemperatureBreach(batteryChar.coolingType, temperatureInC);
             IAlerter alerter = FetchInstance(TypeDescriptor.GetClassName(alertTarget)) as IAlerter;
-            if (alerter != null; )
+            if (alerter != null)
             {
                 alerter.TriggerBreachAlert(breachType);
                 checkAlert = true;

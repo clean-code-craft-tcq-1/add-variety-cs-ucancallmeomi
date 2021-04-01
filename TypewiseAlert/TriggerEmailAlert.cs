@@ -8,7 +8,7 @@ namespace TypewiseAlert
     {
         public void TriggerBreachAlert(BMS_Constants.BreachType breachType)
         {
-            Dictionary<string, string> breachlevel = new Dictionary<string, string>);
+            var breachlevel = new Dictionary<string, string>();
             breachlevel.Add("NORMAL", "normal");
             breachlevel.Add("TOO_LOW", "low");
             breachlevel.Add("TOO_HIGH", "high");
