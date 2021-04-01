@@ -1,90 +1,72 @@
 ﻿using System;
+using System.ComponentModel;
+using System.Reflection;
+using static TypewiseAlert.BMS_Constants;
 
 namespace TypewiseAlert
 {
-  public class TypewiseAlert
-  {
-    public enum BreachType {
-      NORMAL,
-      TOO_LOW,
-      TOO_HIGH
-    };
-    public static BreachType inferBreach(double value, double lowerLimit, double upperLimit) {
-      if(value < lowerLimit) {
-        return BreachType.TOO_LOW;
-      }
-      if(value > upperLimit) {
-        return BreachType.TOO_HIGH;
-      }
-      return BreachType.NORMAL;
-    }
-    public enum CoolingType {
-      PASSIVE_COOLING,
-      HI_ACTIVE_COOLING,
-      MED_ACTIVE_COOLING
-    };
-    public static BreachType classifyTemperatureBreach(
-        CoolingType coolingType, double temperatureInC) {
-      int lowerLimit = 0;
-      int upperLimit = 0;
-      switch(coolingType) {
-        case CoolingType.PASSIVE_COOLING:
-          lowerLimit = 0;
-          upperLimit = 35;
-          break;
-        case CoolingType.HI_ACTIVE_COOLING:
-          lowerLimit = 0;
-          upperLimit = 45;
-          break;
-        case CoolingType.MED_ACTIVE_COOLING:
-          lowerLimit = 0;
-          upperLimit = 40;
-          break;
-      }
-      return inferBreach(temperatureInC, lowerLimit, upperLimit);
-    }
-    public enum AlertTarget{
-      TO_CONTROLLER,
-      TO_EMAIL
-    };
-    public struct BatteryCharacter {
-      public CoolingType coolingType;
-      public string brand;
-    }
-    public static void checkAndAlert(
-        AlertTarget alertTarget, BatteryCharacter batteryChar, double temperatureInC) {
+    public class TypewiseAlert
+    {
 
-      BreachType breachType = classifyTemperatureBreach(
-        batteryChar.coolingType, temperatureInC
-      );
+        public static BreachType inferBreach(double value, double lowerLimit, double upperLimit)
+        {
+            if (value < lowerLimit)
+            {
+                return BreachType.TOO_LOW;
+            }
+            if (value > upperLimit)
+            {
+                return BreachType.TOO_HIGH;
+            }
+            return BreachType.NORMAL;
+        }
 
-      switch(alertTarget) {
-        case AlertTarget.TO_CONTROLLER:
-          sendToController(breachType);
-          break;
-        case AlertTarget.TO_EMAIL:
-          sendToEmail(breachType);
-          break;
-      }
+        public static BreachType classifyTemperatureBreach(CoolingType coolingType, double temperatureInC)
+        {
+            ICoolingLimits coolingLimits = FetchInstance(TypeDescriptor.GetClassName(coolingType)) as ICoolingLimits;
+            return inferBreach(temperatureInC, coolingLimits.getLowerLimit, coolingLimits.getUpperLimit);
+        }
+
+
+        public static bool checkAndAlert(AlertTarget alertTarget, BatteryCharacter batteryChar, double temperatureInC)
+        {
+            bool checkAlert = false;
+
+            BreachType breachType = classifyTemperatureBreach(batteryChar.coolingType, temperatureInC);
+            IAlerter alerter = FetchInstance(TypeDescriptor.GetClassName(alertTarget)) as IAlerter;
+            if (alerter != null; )
+            {
+                alerter.TriggerBreachAlert(breachType);
+                checkAlert = true;
+            }
+
+            return checkAlert;
+
+
+        }
+
+
+        public static Type FetchExecutingInstance(string classname)
+        {
+            Type instanceType = null;
+            AssemblyName assemblyName = Assembly.GetExecutingAssembly().GetName();
+            Assembly assembly = Assembly.Load(assemblyName);
+            Type[] instanceTypes = assembly.GetTypes();
+
+            foreach (Type type in instanceTypes)
+            {
+                if (type.Name.Contains(classname))
+                    instanceType = type;
+            }
+
+            return instanceType;
+        }
+
+        public static object FetchInstance(string classname)
+        {
+            Type instanceType = FetchExecutingInstance(classname);
+            return Activator.CreateInstance(instanceType);
+        }
+
     }
-    public static void sendToController(BreachType breachType) {
-      const ushort header = 0xfeed;
-      Console.WriteLine("{} : {}\n", header, breachType);
-    }
-    public static void sendToEmail(BreachType breachType) {
-      string recepient = "a.b@c.com";
-      switch(breachType) {
-        case BreachType.TOO_LOW:
-          Console.WriteLine("To: {}\n", recepient);
-          Console.WriteLine("Hi, the temperature is too low\n");
-          break;
-        case BreachType.TOO_HIGH:
-          Console.WriteLine("To: {}\n", recepient);
-          Console.WriteLine("Hi, the temperature is too high\n");
-          break;
-        case BreachType.NORMAL:
-          break;
-      }
-    }
-  }
 }
