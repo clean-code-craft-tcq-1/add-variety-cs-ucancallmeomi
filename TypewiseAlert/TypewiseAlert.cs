@@ -23,7 +23,7 @@ namespace TypewiseAlert
 
         public static BreachType classifyTemperatureBreach(CoolingType coolingType, double temperatureInC)
         {
-            ICoolingLimits coolingLimits = FindObjectInstance.FindInstance(coolingType.ToString()) as ICoolingLimits;
+            ICoolingLimits coolingLimits = FetchInstance(coolingType.ToString()) as ICoolingLimits;
             return inferBreach(temperatureInC, coolingLimits.getLowerLimit, coolingLimits.getUpperLimit);
         }
 
@@ -33,7 +33,7 @@ namespace TypewiseAlert
             bool checkAlert = false;
 
             BreachType breachType = classifyTemperatureBreach(batteryChar.coolingType, temperatureInC);
-            IAlerter alerter = FindObjectInstance.FindInstance(alertTarget.ToString()) as IAlerter;
+            IAlerter alerter = FetchInstance(alertTarget.ToString()) as IAlerter;
             if (alerter != null)
             {
                 alerter.TriggerBreachAlert(breachType);
@@ -43,22 +43,28 @@ namespace TypewiseAlert
             return checkAlert;
 
         }
-       
-    }
 
-    public class FindObjectInstance
-    {
-        public static Object FindInstance(string className)
+        public static Type FetchExecutingInstance(string classname)
         {
-            Assembly assemblyName = Assembly.Load(Assembly.GetExecutingAssembly().GetName());
-            foreach (Type type in assemblyName.GetTypes())
+            Type instanceType = null;
+            AssemblyName assemblyName = Assembly.GetExecutingAssembly().GetName();
+            Assembly assembly = Assembly.Load(assemblyName);
+            Type[] instanceTypes = assembly.GetTypes();
+
+            foreach (Type type in instanceTypes)
             {
-                if (type.Name.Contains(className))
-                {
-                    return Activator.CreateInstance(type);
-                }
+                if (type.Name.Contains(classname))
+                    instanceType = type;
             }
-            return null;
+
+            return instanceType;
         }
+
+        public static object FetchInstance(string classname)
+        {
+            Type instanceType = FetchExecutingInstance(classname);
+            return Activator.CreateInstance(instanceType);
+        }
+
     }
 }
