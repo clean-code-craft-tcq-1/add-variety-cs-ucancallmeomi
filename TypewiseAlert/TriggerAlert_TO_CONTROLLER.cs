@@ -4,7 +4,7 @@ using System.Text;
 
 namespace TypewiseAlert
 {
-    public class TriggerControllerAlert : IAlerter
+    public class TriggerAlert_TO_CONTROLLER : IAlerter
     {
         public void TriggerBreachAlert(BMS_Constants.BreachType breachType)
         {

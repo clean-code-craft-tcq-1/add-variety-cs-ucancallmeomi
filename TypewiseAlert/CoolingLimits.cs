@@ -6,7 +6,7 @@ namespace TypewiseAlert
 {
     public class CoolingLimits
     {
-        public class HighCoolingLimits : ICoolingLimits
+        public class HI_ACTIVE_COOLING : ICoolingLimits
         {
             public int getLowerLimit
             {
@@ -20,7 +20,7 @@ namespace TypewiseAlert
 
         }
 
-        public class MediumCoolingLimits : ICoolingLimits
+        public class MED_ACTIVE_COOLING : ICoolingLimits
         {
             public int getLowerLimit
             {
@@ -35,7 +35,7 @@ namespace TypewiseAlert
         }
 
 
-        public class PassiveCoolingLimits : ICoolingLimits
+        public class PASSIVE_COOLING : ICoolingLimits
         {
             public int getLowerLimit
             {
